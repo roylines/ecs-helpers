@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+set -e
+
+CONTAINER_VERSION=$1
+AWS_ACCOUNT_ID=$2
+AWS_REGION=$3
+
+CONTAINER_NAME=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/${PWD##*/}
+
+npm prune 
+npm install
+npm shrinkwrap --production
+docker info
+docker build -t $CONTAINER_NAME:latest .
+docker tag $CONTAINER_NAME:latest $CONTAINER_NAME:$CONTAINER_VERSION
+docker images

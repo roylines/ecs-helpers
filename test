@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+set -e
+
+CONTAINER_VERSION=$1
+AWS_ACCOUNT_ID=$2
+AWS_REGION=$3
+
+CONTAINER_NAME=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/${PWD##*/}
+
+function finish {
+  set +e
+  echo "stopping containers"
+  docker stop TEST
+  docker rm TEST
+}
+
+trap finish INT TERM EXIT
+
+export AGENT_URL="http://127.0.0.1:8080"
+
+docker run --detach --publish=8080:8080 --name TEST $CONTAINER_NAME:$CONTAINER_VERSION
+sleep 4
+echo $AGENT_URL
+curl --retry 10 --retry-delay 5 -v $AGENT_URL
+npm test
